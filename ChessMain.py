@@ -1,7 +1,7 @@
 # main driver file, used for handling user input, and displaying current game-state object.
 
 import pygame as p
-import ChessEngine
+from Chess import ChessEngine
 
 WIDTH = HEIGHT = 512
 DIMENSION = 8
@@ -33,10 +33,29 @@ def main():
     gs = ChessEngine.GameState()
     loadImages()   # only once before while loop
     running = True
+    sqSelected = ()  # no square is selected. keep track of last click of user.
+    playerClicks = []  # keep track of player-clicks.
     while running:
         for e in p.event.get():
             if e.type == p.QUIT:
                 running = False
+            elif e.type == p.MOUSEBUTTONDOWN:
+                location = p.mouse.get_pos()  # (x,y) location of mouse.
+                col = location[0] // SQ_SIZE
+                row = location[1] // SQ_SIZE
+                if sqSelected == (row, col):  # the user clicked the same square twice
+                    sqSelected = ()  # deselect
+                    playerClicks = []  # clear player-clicks
+                else:
+                    sqSelected = (row, col)
+                    playerClicks.append(sqSelected)  # append for both first and second clicks.
+                if len(playerClicks) == 2:  # after 2nd click
+                    move = ChessEngine.Move(playerClicks[0], playerClicks[1], gs.board)
+                    print(move.getChessNotation())
+                    gs.makeMove(move)
+                    sqSelected = ()  # reset user clicks
+                    playerClicks = []
+
         drawGameState(screen, gs)
         clock.tick(MAX_FPS)
         p.display.flip()
