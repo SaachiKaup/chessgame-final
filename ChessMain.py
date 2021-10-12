@@ -1,7 +1,7 @@
 # main driver file, used for handling user input, and displaying current game-state object.
 
 import pygame as p
-from Chess import ChessEngine
+import ChessEngine
 
 WIDTH = HEIGHT = 512
 DIMENSION = 8
