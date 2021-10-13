@@ -6,7 +6,7 @@ class GameState():
             ["bR", "bN", "bB", "bQ", "bK", "bB", "bN", "bR"],
             ["bp", "bp", "bp", "bp", "bp", "bp", "bp", "bp"],
             ["--", "bp", "bR", "--", "wR", "bR", "--", "--"],
-            ["--", "--", "--", "wR", "--", "--", "--", "--"],
+            ["--", "--", "--", "wR", "--", "--", "wK", "--"],
             ["--", "--", "--", "--", "--", "--", "--", "--"],
             ["--", "--", "wR", "bR", "bp", "--", "bp", "--"],
             ["wp", "wp", "wp", "wp", "wp", "wp", "wp", "wp"],
@@ -50,17 +50,19 @@ class GameState():
                     piece = self.board[r][c][1]
                     self.moveFunctions[piece](r, c, moves)
         return moves
-    '''
-    Get all the pawn moves for the pawn located at  row, col and  add these moves to the  list
-    '''
+
+    def getEnemyOrAlly(self, whiteToMove, isEnemy = True):
+        if isEnemy:
+            return 'b' if whiteToMove else 'w'
+        return 'w' if whiteToMove else 'b'
+
     def pawnMovesWB(self, r, c, moves, toWhite = False):
         sign = -1
         row = 1
-        enemy_pawn = 'w'
+        enemy_pawn = self.getEnemyOrAlly(toWhite, True)
         if toWhite:
             sign = 1
             row = 6
-            enemy_pawn = 'b'
         if r == row and self.board[r - (sign * 2)][c] == '--':
             moves.append(Move((r,c), (r - (sign * 2), c), self.board))
         if self.board[r - (sign * 1)][c] == "--":
@@ -85,12 +87,10 @@ class GameState():
          #           return False
        # print("TRUE")
         #return True
-
+    
     def getRookMoves(self, r, c, moves):
         directions = [(1, 0), (-1, 0), (0, 1), (0, -1)]
-        enemy = 'w'
-        if self.whiteToMove:
-            enemy = 'b'
+        enemy = self.getEnemyOrAlly(self.whiteToMove, True)
         for direction in directions:    
             for indx in range(1, 8):
                 endRow = r + direction[0] * indx
@@ -107,7 +107,7 @@ class GameState():
     def getKnightMoves(self, r, c, moves):
         directions = [(2, 1), (2, -1), (1, 2), (1, -2),\
                 (-2, 1), (-2, -1), (-1, 2), (-1, -1)]
-        ally = 'w' if self.whiteToMove else 'b'
+        ally = self.getEnemyOrAlly(self.whiteToMove, False)
         for direction in directions:
             for indx in range(1, 8):
                 endRow = r + direction[0] * indx
@@ -122,14 +122,39 @@ class GameState():
                     break
 
     def getBishopMoves(self, r, c, moves):
-        pass
+        directions = [(1, 1), (1, -1), (-1, 1), (-1, -1)]
+        enemy = self.getEnemyOrAlly(self.whiteToMove, True)
+        for direction in directions:
+            for indx in range(1, 8):
+                endRow = r + direction[0] * indx
+                endCol = c + direction[1] * indx
+                if endRow in range(0, 8) and endCol in range(0,8):
+                    endPiece = self.board[endRow][endCol]
+                    if endPiece[0] == enemy or endPiece == '--':
+                        moves.append(Move((r, c), (endRow, endCol), self.board))
+                    else:
+                        break
+                else:
+                    break
 
     def getQueenMoves(self, r, c, moves):
-        pass
+        self.getBishopMoves(r, c, moves)
+        self.getRookMoves(r, c, moves)
 
     def getKingMoves(self, r, c, moves):
-        pass
-
+        king_move = [(1, 0), (0, 1), (-1, 0), (0, -1), (1, -1), (1, 1), (-1, 1), (-1,-1)]
+        ally = self.getEnemyOrAlly(self.whiteToMove, False)
+        for indx in range(8):
+            endRow = r + king_move[indx][0]
+            endCol = c + king_move[indx][1]
+            if endRow in range(8) and endCol in range(8):
+                endPiece = self.board[endRow][endCol]
+                if endPiece[0] != ally:
+                    moves.append(Move((r, c), (endRow, endCol), self.board))
+                else:
+                    break
+            else:
+                break
 
 class Move():
 
