@@ -6,9 +6,9 @@ class GameState():
             ["bR", "bN", "bB", "bQ", "bK", "bB", "bN", "bR"],
             ["bp", "bp", "bp", "bp", "bp", "bp", "bp", "bp"],
             ["--", "bp", "bR", "--", "wR", "bR", "--", "--"],
+            ["--", "--", "--", "wR", "--", "--", "--", "--"],
             ["--", "--", "--", "--", "--", "--", "--", "--"],
-            ["--", "--", "--", "--", "--", "--", "--", "--"],
-            ["--", "--", "wR", "--", "bp", "--", "bp", "--"],
+            ["--", "--", "wR", "bR", "bp", "--", "bp", "--"],
             ["wp", "wp", "wp", "wp", "wp", "wp", "wp", "wp"],
             ["wR", "wN", "wB", "wQ", "wK", "wB", "wN", "wR"]]
         self.whiteToMove = True
@@ -76,18 +76,36 @@ class GameState():
         else:
             self.pawnMovesWB(r, c, moves, False)
     
+   # def check_row_path(self, board, r, c, next_pos, sign) -> bool:
+    #    if sign == 1:
+     #       for mid_pos in range(r + 1, next_pos):
+      #          board_c_notation = board[mid_pos][c][0]
+       #         if board_c_notation == 'w' or board_c_notation == 'b':
+        #            print("False: ", board[mid_pos][c])
+         #           return False
+       # print("TRUE")
+        #return True
+
     def getRookMoves(self, r, c, moves):
-        signs = [-1, 1]
+        directions = [(1, 0), (-1, 0), (0, 1), (0, -1)]
         enemy = 'w'
         if self.whiteToMove:
             enemy = 'b'
-        for next_pos in range(1, 8):
-            for sign in signs:
-                if r + (sign * next_pos) in range(0, 8):
-                    moves.append(Move((r, c), ((r + (sign * next_pos)), c), self.board))
-                if c + (sign * next_pos) in range(0, 8):
-                    moves.append(Move((r, c), (r, c + (sign * next_pos)), self.board))
-
+        for direction in directions:    
+            for indx in range(1, 8):
+                endRow = r + direction[0] * indx
+                endCol = r + direction[1] * indx
+                if endRow in range(0, 8) and endCol in range(0,8):
+                    endPiece = self.board[endRow][endCol]
+                    if not check_rook_path(self.board[r: endRow], c, direction[0]):
+                        print("whyyy")
+                    if endPiece == '--' or endPiece[0] == enemy:
+                        moves.append(Move((r, c), (endRow, endCol), self.board))
+                    else:
+                        break
+                else:
+                    break
+                    
     def getKnightMoves(self, r, c, moves):
         pass
 
@@ -99,6 +117,8 @@ class GameState():
 
     def getKingMoves(self, r, c, moves):
         pass
+
+
 class Move():
 
     # maps keys to values
