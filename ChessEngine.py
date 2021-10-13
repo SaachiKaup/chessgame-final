@@ -3,16 +3,19 @@
 class GameState():
     def __init__(self):
         self.board =[
-            ["bR", "bN", "bB", "bQ", "bK", "bB", "bK", "bR"],
+            ["bR", "bN", "bB", "bQ", "bK", "bB", "bN", "bR"],
             ["bp", "bp", "bp", "bp", "bp", "bp", "bp", "bp"],
-            ["--", "wp", "--", "wp", "--", "--", "--", "--"],
+            ["--", "bp", "bR", "--", "wR", "bR", "--", "--"],
             ["--", "--", "--", "--", "--", "--", "--", "--"],
             ["--", "--", "--", "--", "--", "--", "--", "--"],
-            ["--", "--", "--", "--", "--", "--", "bp", "--"],
+            ["--", "--", "wR", "--", "bp", "--", "bp", "--"],
             ["wp", "wp", "wp", "wp", "wp", "wp", "wp", "wp"],
-            ["wR", "wN", "wB", "wQ", "wK", "wB", "wK", "wR"]]
+            ["wR", "wN", "wB", "wQ", "wK", "wB", "wN", "wR"]]
         self.whiteToMove = True
         self.moveLog = []
+        self.moveFunctions = {'R': self.getRookMoves, 'p': self.getPawnMoves,\
+                'K': self.getKingMoves, 'B': self.getBishopMoves,\
+                'N': self.getKnightMoves, 'Q': self.getQueenMoves}
 
     def makeMove(self, move):
         self.board[move.startRow][move.startCol] = "--"
@@ -42,12 +45,10 @@ class GameState():
         for r in range(len(self.board)):
             for c in range(len(self.board[r])):
                 turn = self.board[r][c][0]
-                if (turn == 'w' and self.whiteToMove) or (turn =='b' and not self.whiteToMove):
+                if (turn == 'w' and self.whiteToMove)\
+                        or (turn =='b' and not self.whiteToMove):
                     piece = self.board[r][c][1]
-                    if piece == 'p':
-                        self.getPawnMoves(r, c, moves)
-                    elif piece == 'R':
-                        self.getRookMoves(r, c, moves)
+                    self.moveFunctions[piece](r, c, moves)
         return moves
     '''
     Get all the pawn moves for the pawn located at  row, col and  add these moves to the  list
@@ -76,13 +77,28 @@ class GameState():
             self.pawnMovesWB(r, c, moves, False)
     
     def getRookMoves(self, r, c, moves):
-        sign = -1
+        signs = [-1, 1]
+        enemy = 'w'
         if self.whiteToMove:
-            sign = 1
-        for _ in range(1, 8):
-            if self.board[r - (sign * _)][c] == "--":
-                moves.append(Move((r, c), (r - (sign * 1), c), self.board))
-              #still working on it 
+            enemy = 'b'
+        for next_pos in range(1, 8):
+            for sign in signs:
+                if r + (sign * next_pos) in range(0, 8):
+                    moves.append(Move((r, c), ((r + (sign * next_pos)), c), self.board))
+                if c + (sign * next_pos) in range(0, 8):
+                    moves.append(Move((r, c), (r, c + (sign * next_pos)), self.board))
+
+    def getKnightMoves(self, r, c, moves):
+        pass
+
+    def getBishopMoves(self, r, c, moves):
+        pass
+
+    def getQueenMoves(self, r, c, moves):
+        pass
+
+    def getKingMoves(self, r, c, moves):
+        pass
 class Move():
 
     # maps keys to values
