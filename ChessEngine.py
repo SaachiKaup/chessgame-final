@@ -94,11 +94,9 @@ class GameState():
         for direction in directions:    
             for indx in range(1, 8):
                 endRow = r + direction[0] * indx
-                endCol = r + direction[1] * indx
+                endCol = c + direction[1] * indx
                 if endRow in range(0, 8) and endCol in range(0,8):
                     endPiece = self.board[endRow][endCol]
-                    if not check_rook_path(self.board[r: endRow], c, direction[0]):
-                        print("whyyy")
                     if endPiece == '--' or endPiece[0] == enemy:
                         moves.append(Move((r, c), (endRow, endCol), self.board))
                     else:
@@ -107,7 +105,21 @@ class GameState():
                     break
                     
     def getKnightMoves(self, r, c, moves):
-        pass
+        directions = [(2, 1), (2, -1), (1, 2), (1, -2),\
+                (-2, 1), (-2, -1), (-1, 2), (-1, -1)]
+        ally = 'w' if self.whiteToMove else 'b'
+        for direction in directions:
+            for indx in range(1, 8):
+                endRow = r + direction[0] * indx
+                endCol = c + direction[1] * indx
+                if endRow in range(0, 8) and endCol in range(0,8):
+                    endPiece = self.board[endRow][endCol]
+                    if endPiece[0] != ally:
+                        moves.append(Move((r, c), (endRow, endCol), self.board))
+                    else:
+                        break
+                else:
+                    break
 
     def getBishopMoves(self, r, c, moves):
         pass
