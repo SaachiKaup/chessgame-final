@@ -5,10 +5,10 @@ class GameState():
         self.board =[
             ["bR", "bN", "bB", "bQ", "bK", "bB", "bK", "bR"],
             ["bp", "bp", "bp", "bp", "bp", "bp", "bp", "bp"],
+            ["--", "wp", "--", "wp", "--", "--", "--", "--"],
             ["--", "--", "--", "--", "--", "--", "--", "--"],
             ["--", "--", "--", "--", "--", "--", "--", "--"],
-            ["--", "--", "--", "--", "--", "--", "--", "--"],
-            ["--", "--", "--", "--", "--", "--", "--", "--"],
+            ["--", "--", "--", "--", "--", "--", "bp", "--"],
             ["wp", "wp", "wp", "wp", "wp", "wp", "wp", "wp"],
             ["wR", "wN", "wB", "wQ", "wK", "wB", "wK", "wR"]]
         self.whiteToMove = True
@@ -38,11 +38,11 @@ class GameState():
     all moves without considering checks
     '''
     def getAllPossibleMoves(self):
-        moves = [Move((6, 4), (4, 4), self.board)]
+        moves = []
         for r in range(len(self.board)):
             for c in range(len(self.board[r])):
                 turn = self.board[r][c][0]
-                if (turn == 'w' and self.whiteToMove) and (turn =='b' and not self.whiteToMove):
+                if (turn == 'w' and self.whiteToMove) or (turn =='b' and not self.whiteToMove):
                     piece = self.board[r][c][1]
                     if piece == 'p':
                         self.getPawnMoves(r, c, moves)
@@ -52,15 +52,37 @@ class GameState():
     '''
     Get all the pawn moves for the pawn located at  row, col and  add these moves to the  list
     '''
-    def getPawnMoves(self, r, c, moves):
-        pass
+    def pawnMovesWB(self, r, c, moves, toWhite = False):
+        sign = -1
+        row = 1
+        enemy_pawn = 'w'
+        if toWhite:
+            sign = 1
+            row = 6
+            enemy_pawn = 'b'
+        if r == row and self.board[r - (sign * 2)][c] == '--':
+            moves.append(Move((r,c), (r - (sign * 2), c), self.board))
+        if self.board[r - (sign * 1)][c] == "--":
+            moves.append(Move((r,c), (r - (sign * 1), c), self.board))
+        if c - 1 >= 0 and self.board[r -(sign * 1)][c - 1][0] == enemy_pawn:
+            moves.append(Move((r,c), (r - (sign * 1), c - 1), self.board))
+        if c + 1 <= 7 and self.board[r - (sign * 1)][c + 1][0] == enemy_pawn:
+            moves.append(Move((r,c), (r - (sign * 1), c + 1), self.board))
 
-    '''
-    Get all the rook moves for the rook located at  row, col and  add these moves to the  list
-    '''
+    def getPawnMoves(self, r, c, moves): #r and c are rows and columns entered by user
+        if self.whiteToMove:
+            self.pawnMovesWB(r, c, moves, True)
+        else:
+            self.pawnMovesWB(r, c, moves, False)
+    
     def getRookMoves(self, r, c, moves):
-        pass
-
+        sign = -1
+        if self.whiteToMove:
+            sign = 1
+        for _ in range(1, 8):
+            if self.board[r - (sign * _)][c] == "--":
+                moves.append(Move((r, c), (r - (sign * 1), c), self.board))
+              #still working on it 
 class Move():
 
     # maps keys to values
