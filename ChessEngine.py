@@ -5,10 +5,10 @@ class GameState():
         self.board =[
             ["bR", "bN", "bB", "bQ", "bK", "bB", "bN", "bR"],
             ["bp", "bp", "bp", "bp", "bp", "bp", "bp", "bp"],
-            ["--", "bp", "bR", "--", "wR", "bR", "--", "--"],
-            ["--", "--", "--", "wR", "--", "--", "wK", "--"],
             ["--", "--", "--", "--", "--", "--", "--", "--"],
-            ["--", "--", "wR", "bR", "bp", "--", "bp", "--"],
+            ["wR", "--", "--", "--", "bR", "--", "--", "wR"],
+            ["--", "--", "--", "--", "--", "--", "--", "--"],
+            ["--", "--", "--", "bR", "--", "--", "--", "--"],
             ["wp", "wp", "wp", "wp", "wp", "wp", "wp", "wp"],
             ["wR", "wN", "wB", "wQ", "wK", "wB", "wN", "wR"]]
         self.whiteToMove = True
@@ -30,13 +30,18 @@ class GameState():
             self.board[move.startRow][move.startCol] = move.pieceMoved
             self.board[move.endRow][move.endCol] = move.pieceCaptured
             self.whiteToMove = not self.whiteToMove  # switch turns back.
+    
+    def getReverseBoard(self):
+        pass
 
-    '''
-    all moves considering checks
-    '''
+    def getEndLessOrStart(self, start, end):
+        if start < end:
+            return (start, end)
+        return (end, start)
+     
     def getValidMoves(self):
-        return self.getAllPossibleMoves()
-
+        moves = self.getAllPossibleMoves() #just because validity of moves must be checked
+        return moves
     '''
     all moves without considering checks
     '''
@@ -78,16 +83,18 @@ class GameState():
         else:
             self.pawnMovesWB(r, c, moves, False)
     
-   # def check_row_path(self, board, r, c, next_pos, sign) -> bool:
-    #    if sign == 1:
-     #       for mid_pos in range(r + 1, next_pos):
-      #          board_c_notation = board[mid_pos][c][0]
-       #         if board_c_notation == 'w' or board_c_notation == 'b':
-        #            print("False: ", board[mid_pos][c])
-         #           return False
-       # print("TRUE")
-        #return True
-    
+    def checkRookPath(self, r, c, endRow, endCol, direction):
+        if direction[1] != 0:
+            rowOrdered = self.getEndLessOrStart(r, endRow)
+            if all([(self.board[mid_path_row_indx][endCol] == '--') for mid_path_row_indx in range(rowOrdered[0], rowOrdered[1])]):
+                return True
+        elif direction[0] != 0:
+            colOrdered = self.getEndLessOrStart(c, endCol) 
+            print(colOrdered)
+            if all([(self.board[endRow][mid_path_col_indx] == '--') for mid_path_col_indx in range(colOrdered[0], colOrdered[1])]):
+                return True
+        return False
+
     def getRookMoves(self, r, c, moves):
         directions = [(1, 0), (-1, 0), (0, 1), (0, -1)]
         enemy = self.getEnemyOrAlly(self.whiteToMove, True)
@@ -95,7 +102,8 @@ class GameState():
             for indx in range(1, 8):
                 endRow = r + direction[0] * indx
                 endCol = c + direction[1] * indx
-                if endRow in range(0, 8) and endCol in range(0,8):
+                if endRow in range(0, 8) and endCol in range(0,8)\
+                        and self.checkRookPath(r, c, endRow, endCol, direction):
                     endPiece = self.board[endRow][endCol]
                     if endPiece == '--' or endPiece[0] == enemy:
                         moves.append(Move((r, c), (endRow, endCol), self.board))
