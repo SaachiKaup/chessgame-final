@@ -5,17 +5,19 @@ class GameState():
         self.board =[
             ["bR", "bN", "bB", "bQ", "bK", "bB", "bN", "bR"],
             ["bp", "bp", "bp", "bp", "bp", "bp", "bp", "bp"],
+            ["--", "--", "--", "--", "bp", "--", "--", "--"],
+            ["wR", "--", "--", "wK", "bR", "--", "--", "wR"],
             ["--", "--", "--", "--", "--", "--", "--", "--"],
-            ["wR", "--", "--", "--", "bR", "--", "--", "wR"],
-            ["--", "--", "--", "--", "--", "--", "--", "--"],
-            ["--", "--", "--", "bR", "--", "--", "--", "--"],
-            ["wp", "wp", "wp", "wp", "wp", "wp", "wp", "wp"],
+            ["--", "--", "bB", "bp", "--", "--", "--", "--"],
+            ["wp", "bp", "wp", "wp", "wp", "wp", "wp", "wp"],
             ["wR", "wN", "wB", "wQ", "wK", "wB", "wN", "wR"]]
         self.whiteToMove = True
         self.moveLog = []
         self.moveFunctions = {'R': self.getRookMoves, 'p': self.getPawnMoves,\
                 'K': self.getKingMoves, 'B': self.getBishopMoves,\
                 'N': self.getKnightMoves, 'Q': self.getQueenMoves}
+        self.checkMate = False
+        self.staleMate = False
 
     def makeMove(self, move):
         self.board[move.startRow][move.startCol] = "--"
@@ -41,7 +43,37 @@ class GameState():
      
     def getValidMoves(self):
         moves = self.getAllPossibleMoves() #just because validity of moves must be checked
+        for i in range(len(moves) - 1, -1, -1): #traverses moves backwards
+            self.makeMove(moves[i])
+            self.whiteToMove = not self.whiteToMove
+            if self.squareUnderAttack():
+                print(move.pieceMoved, move.pieceCaptured)
+                del moves[i]
+            self.whiteToMove = not self.whiteToMove
+            self.undoMove()
+        
+        if len(moves) == 0:
+            if self.squareUnderAttack():
+                self.checkMate = True
+            else:
+                self.staleMate = True
+        else:
+            self.checkMate, self.staleMate = False, False
+        
         return moves
+     
+    def squareUnderAttack(self):
+        self.whiteToMove = not self.whiteToMove #perspective switch
+        opp_moves = self.getAllPossibleMoves()
+        self.whiteToMove = not self.whiteToMove
+        for move in opp_moves:
+            if not self.whiteToMove and move.pieceCaptured == 'wK':
+                return True
+            elif self.whiteToMove and self.board[move.endRow][move.endCol] == 'bK':
+                return True
+        return False
+
+
     '''
     all moves without considering checks
     '''
@@ -64,17 +96,17 @@ class GameState():
     def pawnMovesWB(self, r, c, moves, toWhite = False):
         sign = -1
         row = 1
-        enemy_pawn = self.getEnemyOrAlly(toWhite, True)
+        enemy = self.getEnemyOrAlly(toWhite, True)
         if toWhite:
             sign = 1
             row = 6
         if r == row and self.board[r - (sign * 2)][c] == '--':
             moves.append(Move((r,c), (r - (sign * 2), c), self.board))
-        if self.board[r - (sign * 1)][c] == "--":
+        elif self.board[r - (sign * 1)][c] == "--":
             moves.append(Move((r,c), (r - (sign * 1), c), self.board))
-        if c - 1 >= 0 and self.board[r -(sign * 1)][c - 1][0] == enemy_pawn:
+        if c - 1 >= 0 and self.board[r -(sign * 1)][c - 1][0] == enemy:
             moves.append(Move((r,c), (r - (sign * 1), c - 1), self.board))
-        if c + 1 <= 7 and self.board[r - (sign * 1)][c + 1][0] == enemy_pawn:
+        if c + 1 <= 7 and self.board[r - (sign * 1)][c + 1][0] == enemy:
             moves.append(Move((r,c), (r - (sign * 1), c + 1), self.board))
 
     def getPawnMoves(self, r, c, moves): #r and c are rows and columns entered by user
@@ -82,16 +114,26 @@ class GameState():
             self.pawnMovesWB(r, c, moves, True)
         else:
             self.pawnMovesWB(r, c, moves, False)
+        #if len(self.moveLog) > 1 and self.checkPawnPromotion():
+         #   self.moveLog[-1].pieceCaptured = 'bQ'
+
+    #def checkPawnPromotion(self):
+     #   if self.whiteToMove:
+     #       last_move = self.moveLog[-1]
+      #      if last_move.endRow == 7:
+       #         return True 
     
+    def checkEmptySquare(self, mid_row_indx, mid_col_indx):
+        return self.board[mid_row_indx][mid_col_indx] == '--'
+
     def checkRookPath(self, r, c, endRow, endCol, direction):
-        if direction[1] != 0:
+        if direction[0] != 0:
             rowOrdered = self.getEndLessOrStart(r, endRow)
-            if all([(self.board[mid_path_row_indx][endCol] == '--') for mid_path_row_indx in range(rowOrdered[0], rowOrdered[1])]):
+            if all([(self.board[mid_path_row_indx][endCol] == '--') for mid_path_row_indx in range(rowOrdered[0] + 1, rowOrdered[1])]):
                 return True
-        elif direction[0] != 0:
+        elif direction[1] != 0:
             colOrdered = self.getEndLessOrStart(c, endCol) 
-            print(colOrdered)
-            if all([(self.board[endRow][mid_path_col_indx] == '--') for mid_path_col_indx in range(colOrdered[0], colOrdered[1])]):
+            if all([(self.board[endRow][mid_path_col_indx] == '--') for mid_path_col_indx in range(colOrdered[0] + 1, colOrdered[1])]):
                 return True
         return False
 
@@ -129,14 +171,22 @@ class GameState():
                 else:
                     break
 
+    def checkBishopPath(self, r, c, endRow, endCol, direction):
+        rowOrdered = self.getEndLessOrStart(r, endRow)
+        colOrdered = self.getEndLessOrStart(c, endCol)
+        if all([self.checkEmptySquare(mid_row_indx, mid_col_indx) for mid_row_indx, mid_col_indx in zip(range(rowOrdered[0] + 1,rowOrdered[1]), range(colOrdered[0] + 1,colOrdered[1]))]):
+           return True
+        return False
+
     def getBishopMoves(self, r, c, moves):
         directions = [(1, 1), (1, -1), (-1, 1), (-1, -1)]
-        enemy = self.getEnemyOrAlly(self.whiteToMove, True)
+        enemy = self.getEnemyOrAlly(self.whiteToMove, isEnemy = True)
         for direction in directions:
             for indx in range(1, 8):
                 endRow = r + direction[0] * indx
                 endCol = c + direction[1] * indx
-                if endRow in range(0, 8) and endCol in range(0,8):
+                if endRow in range(0, 8) and endCol in range(0,8)\
+                        and self.checkBishopPath(r, c, endRow, endCol, direction):
                     endPiece = self.board[endRow][endCol]
                     if endPiece[0] == enemy or endPiece == '--':
                         moves.append(Move((r, c), (endRow, endCol), self.board))
