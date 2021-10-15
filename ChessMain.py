@@ -8,23 +8,16 @@ DIMENSION = 8
 SQ_SIZE = HEIGHT // DIMENSION
 MAX_FPS = 15  # for animation if need be
 IMAGES = {}
-
 '''
 initialise a global dictionary of images. This will be called exactly once in the main.
 '''
-
-
 def loadImages():
     pieces = ["wp", "wR", "wN", "wB", "wK", "wQ", "bp", "bR", "bN", "bB", "bK", "bQ"]
     for piece in pieces:
         IMAGES[piece] = p.transform.scale(p.image.load("images/" + piece + ".png"), (SQ_SIZE, SQ_SIZE))
-
-
 ''' 
 the main driver for our code. This will handle user input and updating graphics.
 '''
-
-
 def main():
     p.init()
     screen = p.display.set_mode((WIDTH, HEIGHT))
@@ -59,10 +52,12 @@ def main():
                  #   print([_ for _ in gs.getValidMoves()])'''
                 if len(playerClicks) == 2:  # after 2nd click
                     move = ChessEngine.Move(playerClicks[0], playerClicks[1], gs.board)
-                    print(move.getChessNotation())
+                    print(move.getChessNotation(), move.pieceMoved, move.pieceCaptured)
+                    
                     if move in validMoves:
                         gs.makeMove(move)
                         moveMade = True
+                        #print("move made")
                         sqSelected = ()  # reset user clicks
                         playerClicks = []
                     else:
@@ -89,7 +84,7 @@ def drawGameState(screen, gs):
 
 
 def drawBoard(screen):
-    colors = [p.Color("white"), p.Color("grey")]
+    colors = [p.Color("cornsilk"), p.Color("tan")]
     for r in range(DIMENSION):
         for c in range(DIMENSION):
             color = colors[((r + c) % 2)]
