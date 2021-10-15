@@ -5,11 +5,11 @@ class GameState():
         self.board =[
             ["bR", "bN", "bB", "bQ", "bK", "bB", "bN", "bR"],
             ["bp", "bp", "bp", "bp", "bp", "bp", "bp", "bp"],
-            ["--", "--", "--", "--", "bp", "--", "--", "--"],
-            ["wR", "--", "--", "wK", "bR", "--", "--", "wR"],
             ["--", "--", "--", "--", "--", "--", "--", "--"],
-            ["--", "--", "bB", "bp", "--", "--", "--", "--"],
-            ["wp", "bp", "wp", "wp", "wp", "wp", "wp", "wp"],
+            ["--", "--", "--", "--", "--", "--", "--", "--"],
+            ["--", "--", "--", "--", "--", "--", "--", "--"],
+            ["--", "--", "--", "--", "--", "--", "--", "--"],
+            ["wp", "wp", "wp", "wp", "wp", "wp", "wp", "wp"],
             ["wR", "wN", "wB", "wQ", "wK", "wB", "wN", "wR"]]
         self.whiteToMove = True
         self.moveLog = []
@@ -43,6 +43,8 @@ class GameState():
      
     def getValidMoves(self):
         moves = self.getAllPossibleMoves() #just because validity of moves must be checked
+        #for move in self.moveLog:
+            #print(move.pieceMoved)
         for i in range(len(moves) - 1, -1, -1): #traverses moves backwards
             self.makeMove(moves[i])
             self.whiteToMove = not self.whiteToMove
@@ -96,32 +98,50 @@ class GameState():
     def pawnMovesWB(self, r, c, moves, toWhite = False):
         sign = -1
         row = 1
-        enemy = self.getEnemyOrAlly(toWhite, True)
+        enemy = self.getEnemyOrAlly(toWhite, isEnemy = True)
         if toWhite:
             sign = 1
             row = 6
         if r == row and self.board[r - (sign * 2)][c] == '--':
             moves.append(Move((r,c), (r - (sign * 2), c), self.board))
-        elif self.board[r - (sign * 1)][c] == "--":
-            moves.append(Move((r,c), (r - (sign * 1), c), self.board))
-        if c - 1 >= 0 and self.board[r -(sign * 1)][c - 1][0] == enemy:
-            moves.append(Move((r,c), (r - (sign * 1), c - 1), self.board))
-        if c + 1 <= 7 and self.board[r - (sign * 1)][c + 1][0] == enemy:
-            moves.append(Move((r,c), (r - (sign * 1), c + 1), self.board))
-
+        if r - (sign * 1) in range(0, 8):
+            if self.board[r - (sign * 1)][c] == "--":
+                moves.append(Move((r,c), (r - (sign * 1), c), self.board))
+            if c - 1 in range(0, 8) and self.board[r -(sign * 1)][c - 1][0] == enemy:
+                moves.append(Move((r,c), (r - (sign * 1), c - 1), self.board))
+            if c + 1 in range(0, 8) and self.board[r - (sign * 1)][c + 1][0] == enemy:
+                moves.append(Move((r,c), (r - (sign * 1), c + 1), self.board))
+        
     def getPawnMoves(self, r, c, moves): #r and c are rows and columns entered by user
         if self.whiteToMove:
             self.pawnMovesWB(r, c, moves, True)
         else:
             self.pawnMovesWB(r, c, moves, False)
-        #if len(self.moveLog) > 1 and self.checkPawnPromotion():
-         #   self.moveLog[-1].pieceCaptured = 'bQ'
+        if self.checkPawnPromotion():
+            print("In pos")
+            #self.moveLog[-1].pieceCaptured = 'bQ'
 
-    #def checkPawnPromotion(self):
-     #   if self.whiteToMove:
-     #       last_move = self.moveLog[-1]
-      #      if last_move.endRow == 7:
-       #         return True 
+    def checkPawnPromotion(self):
+        if self.moveLog[-1].endRow == 6 and self.moveLog[-1].startRow == 6: #and last row inc
+            print([_.pieceCaptured for _ in self.moveLog])
+            #for move in self.moveLog[::-1]:
+                #print("piece moved:", move.pieceMoved, " captured:", move.pieceCaptured)
+        #print(self.moveLog[-1].pieceMoved, self.moveLog[-1].pieceCaptured)    
+            #if self.moveLog[-1].pieceCaptured[0] == 'w':
+            #    print("Logic works")
+            return True
+        if 'wp' in self.board[1]:
+            print("Is white even required")
+            return True
+        #diff logic:
+        #    last_move = self.moveLog[-1] if len(self.moveLog) > 1 else None
+            #if last_move:
+             #   if last_move.startRow == 6 and last_move.endRow == 7:
+              #      print("Moves: ", last_move.startRow)
+               #     print("piece moved:", last_move.pieceMoved, " captured:", last_move.pieceCaptured)
+                #    return True 
+        
+        return False
     
     def checkEmptySquare(self, mid_row_indx, mid_col_indx):
         return self.board[mid_row_indx][mid_col_indx] == '--'
@@ -233,7 +253,7 @@ class Move():
         self.pieceMoved = board[self.startRow][self.startCol]
         self.pieceCaptured = board[self.endRow][self.endCol]
         self.moveID = self.startRow * 1000 + self.startCol * 100 + self.endRow * 10 + self.endCol
-        print(self.moveID)
+        #print(self.moveID)
 
     '''
     Overriding the equals method
