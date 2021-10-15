@@ -24,8 +24,8 @@ class GameState():
         self.board[move.endRow][move.endCol] = move.pieceMoved
         self.moveLog.append(move)  # logging the move so we can undo it later.
         self.whiteToMove = not self.whiteToMove  # swap players
-
-
+        if move.isPawnPromotion:
+            self.board[move.endRow][move.endCol] = move.pieceMoved[0] + 'Q'
     def undoMove(self):
         if len(self.moveLog) != 0:  # making sure there is a move to undo
             move = self.moveLog.pop()
@@ -117,19 +117,15 @@ class GameState():
             self.pawnMovesWB(r, c, moves, True)
         else:
             self.pawnMovesWB(r, c, moves, False)
-        if self.checkPawnPromotion():
-            print("In pos")
-            #self.moveLog[-1].pieceCaptured = 'bQ'
 
     def checkPawnPromotion(self):
-        if self.moveLog[-1].endRow == 6 and self.moveLog[-1].startRow == 6: #and last row inc
-            print([_.pieceCaptured for _ in self.moveLog])
-            #for move in self.moveLog[::-1]:
-                #print("piece moved:", move.pieceMoved, " captured:", move.pieceCaptured)
-        #print(self.moveLog[-1].pieceMoved, self.moveLog[-1].pieceCaptured)    
-            #if self.moveLog[-1].pieceCaptured[0] == 'w':
+        pass 
+        #if self.moveLog[-1].endRow == 6 and self.moveLog[-1].startRow == 6: #and last row inc
+         #   print([_.pieceCaptured for _ in self.moveLog])
+          #  print(self.moveLog[-1].pieceMoved, self.moveLog[-1].pieceCaptured)    
+           # if self.moveLog[-1].pieceCaptured[0] == 'w':
             #    print("Logic works")
-            return True
+            #return True
         if 'wp' in self.board[1]:
             print("Is white even required")
             return True
@@ -252,6 +248,9 @@ class Move():
         self.endCol = endSq[1]
         self.pieceMoved = board[self.startRow][self.startCol]
         self.pieceCaptured = board[self.endRow][self.endCol]
+        self.isPawnPromotion = False
+        if (self.pieceMoved == 'wp' and self.endRow == 0) or (self.pieceMoved == 'bp' and self.endRow == 7):
+            self.isPawnPromotion = True
         self.moveID = self.startRow * 1000 + self.startCol * 100 + self.endRow * 10 + self.endCol
         #print(self.moveID)
 
