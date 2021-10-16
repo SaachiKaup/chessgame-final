@@ -190,9 +190,13 @@ class GameState():
     def checkBishopPath(self, r, c, endRow, endCol, direction):
         rowOrdered = self.getEndLessOrStart(r, endRow)
         colOrdered = self.getEndLessOrStart(c, endCol)
-        if all([self.checkEmptySquare(mid_row_indx, mid_col_indx) for mid_row_indx, mid_col_indx in zip(range(rowOrdered[0] + 1,rowOrdered[1]), range(colOrdered[0] + 1,colOrdered[1]))]):
-           return True
-        return False
+        bool_list_bish_path = [self.checkEmptySquare(mid_row_indx, mid_col_indx) for mid_row_indx, mid_col_indx in zip(range(rowOrdered[0] + 1,rowOrdered[1]), range(colOrdered[0] + 1,colOrdered[1]))]
+        print(list(zip(range(rowOrdered[0] + 1,rowOrdered[1]), range(colOrdered[0] + 1,colOrdered[1]))))
+        print(f'bishop jumps boolean vals = {len(bool_list_bish_path)}')
+        if bool_list_bish_path and all(bool_list_bish_path):
+            print(f'works {len(bool_list_bish_path)}') 
+            #return True
+        return True
 
     def getBishopMoves(self, r, c, moves):
         directions = [(1, 1), (1, -1), (-1, 1), (-1, -1)]
