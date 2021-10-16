@@ -18,18 +18,7 @@ def loadImages():
 ''' 
 the main driver for our code. This will handle user input and updating graphics.
 '''
-def main():
-    p.init()
-    screen = p.display.set_mode((WIDTH, HEIGHT))
-    clock = p.time.Clock()
-    screen.fill(p.Color("white"))
-    gs = ChessEngine.GameState()
-    validMoves = gs.getValidMoves()
-    moveMade = False  # flag variable for when a move is made
-    loadImages()   # only once before while loop
-    running = True
-    sqSelected = ()  # no square is selected. keep track of last click of user.
-    playerClicks = []  # keep track of player-clicks.
+def event(gs, validMoves, moveMade, running, sqSelected, playerClicks, screen, clock):
     while running:
         for e in p.event.get():
             if e.type == p.QUIT:
@@ -43,13 +32,14 @@ def main():
                 if sqSelected == (row, col):  # the user clicked the same square twice
                     sqSelected = ()  # deselect
                     playerClicks = []  # clear player-clicks
+
                 else:
                     sqSelected = (row, col)
                     playerClicks.append(sqSelected)  # append for both first and second clicks.
                 if len(playerClicks) == 2:  # after 2nd click
                     move = ChessEngine.Move(playerClicks[0], playerClicks[1], gs.board)
                     print(move.getChessNotation(), move.pieceMoved, move.pieceCaptured)
-                        
+                    
                     for indx in range(len(validMoves)):
                         if move == validMoves[indx]:
                             gs.makeMove(validMoves[indx])
@@ -57,22 +47,44 @@ def main():
                             #print("move made")
                             sqSelected = ()  # reset user clicks
                             playerClicks = []
-                    if not moveMade:
-                        playerClicks = [sqSelected]
+            
+                if not moveMade:
+                    playerClicks = [sqSelected]
             # key handlers
             elif e.type == p.KEYDOWN:
                 if e.key == p.K_z: # undo when z is pressed.
                     gs.undoMove()
                     moveMade = True
-                #if not gs.getValidMoves:
-                 #   running = False
 
         if moveMade:
             validMoves = gs.getValidMoves()
             moveMade = False
+
         drawGameState(screen, gs)
         clock.tick(MAX_FPS)
         p.display.flip()
+
+def main():
+    p.init()
+    screen = p.display.set_mode((WIDTH, HEIGHT))
+    clock = p.time.Clock()
+    screen.fill(p.Color("white"))
+    gs = ChessEngine.GameState()
+    validMoves = gs.getValidMoves()
+    moveMade = False  # flag variable for when a move is made
+    loadImages()   # only once before while loop
+    running = True
+    sqSelected = ()  # no square is selected. keep track of last click of user.
+    playerClicks = []  # keep track of player-clicks.
+   # while running:
+    #    for e in p.event.get():
+    event(gs, validMoves, moveMade, running, sqSelected, playerClicks, screen, clock)
+            #running = event_running[0]
+            #moveMade = event_running[1]
+            #Trying for checkmate. Not fixed yet. Should only quit if No other move possible
+            #if not gs.getValidMoves:
+            #   running = False
+
 
 
 def drawGameState(screen, gs):
