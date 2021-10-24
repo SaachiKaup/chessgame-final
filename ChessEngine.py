@@ -1,5 +1,6 @@
 # storing all information about current state of Chess game.
 # Also responsible for determining valid moves at current stats.
+import itertools as it
 class GameState():
     def __init__(self):
         self.board =[
@@ -117,27 +118,6 @@ class GameState():
             self.pawnMovesWB(r, c, moves, True)
         else:
             self.pawnMovesWB(r, c, moves, False)
-
-    def checkPawnPromotion(self):
-        pass 
-        #if self.moveLog[-1].endRow == 6 and self.moveLog[-1].startRow == 6: #and last row inc
-         #   print([_.pieceCaptured for _ in self.moveLog])
-          #  print(self.moveLog[-1].pieceMoved, self.moveLog[-1].pieceCaptured)    
-           # if self.moveLog[-1].pieceCaptured[0] == 'w':
-            #    print("Logic works")
-            #return True
-        if 'wp' in self.board[1]:
-            print("Is white even required")
-            return True
-        #diff logic:
-        #    last_move = self.moveLog[-1] if len(self.moveLog) > 1 else None
-            #if last_move:
-             #   if last_move.startRow == 6 and last_move.endRow == 7:
-              #      print("Moves: ", last_move.startRow)
-               #     print("piece moved:", last_move.pieceMoved, " captured:", last_move.pieceCaptured)
-                #    return True 
-        
-        return False
     
     def checkEmptySquare(self, mid_row_indx, mid_col_indx):
         return self.board[mid_row_indx][mid_col_indx] == '--'
@@ -187,29 +167,62 @@ class GameState():
                 else:
                     break
 
-    def checkBishopPath(self, r, c, endRow, endCol, direction):
-        rowOrdered = self.getEndLessOrStart(r, endRow)
-        colOrdered = self.getEndLessOrStart(c, endCol)
-        bool_list_bish_path = [self.checkEmptySquare(mid_row_indx, mid_col_indx) for mid_row_indx, mid_col_indx in zip(range(rowOrdered[0] + 1,rowOrdered[1]), range(colOrdered[0] + 1,colOrdered[1]))]
-        print(list(zip(range(rowOrdered[0] + 1,rowOrdered[1]), range(colOrdered[0] + 1,colOrdered[1]))))
-        print(f'bishop jumps boolean vals = {len(bool_list_bish_path)}')
-        if bool_list_bish_path and all(bool_list_bish_path):
-            print(f'works {len(bool_list_bish_path)}') 
-            #return True
+    def checkBishopPath(self, r, c, endRow, endCol):
+        #Cases
+        #r < endRow 
+            #c < EndCol
+            #c > end COl
+        if r < endRow:
+            if c < endCol:
+                col = c + 1 
+                for row in range(r + 1, endRow):
+                    if self.board[row][col] == '--':
+                        print("col, ", col, "row", row)
+                        col += 1
+                    else:
+                        return False
+            else:
+                col = c - 1
+                for row in range(r + 1, endRow):
+                    if self.board[row][col] == '--':
+                        col -= 1
+                    else:
+                        return False
+        else:# r> endRow
+            if c < endCol:
+                col = c + 1
+                for row in range(r - 1, endRow, -1):
+                    if self.board[row][col] == '--':
+                        col += 1
+                    else:
+                        return False
+            else:#c  >EndCOl
+                col = c - 1
+                for row in range(r - 1, endRow, -1):
+                    if self.board[row][col] == '--':
+                        col -= 1
+                    else:
+                        return False
         return True
 
     def getBishopMoves(self, r, c, moves):
         directions = [(1, 1), (1, -1), (-1, 1), (-1, -1)]
         enemy = self.getEnemyOrAlly(self.whiteToMove, isEnemy = True)
+        
         for direction in directions:
             for indx in range(1, 8):
+                
                 endRow = r + direction[0] * indx
                 endCol = c + direction[1] * indx
+                
                 if endRow in range(0, 8) and endCol in range(0,8)\
-                        and self.checkBishopPath(r, c, endRow, endCol, direction):
+                        and self.checkBishopPath(r, c, endRow, endCol):
+                    
                     endPiece = self.board[endRow][endCol]
+                    
                     if endPiece[0] == enemy or endPiece == '--':
                         moves.append(Move((r, c), (endRow, endCol), self.board))
+                    
                     else:
                         break
                 else:
