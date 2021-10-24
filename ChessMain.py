@@ -2,6 +2,7 @@
 
 import pygame as p
 import ChessEngine
+import ChessAI as AI
 
 WIDTH = HEIGHT = 512
 DIMENSION = 8
@@ -18,13 +19,14 @@ def loadImages():
 ''' 
 the main driver for our code. This will handle user input and updating graphics.
 '''
-def event(gs, validMoves, moveMade, running, sqSelected, playerClicks, screen, clock):
+def event(gs, validMoves, moveMade, running, sqSelected, playerClicks, screen, clock, humanWhite, humanBlack):
     while running:
+        humanTurn = (gs.whiteToMove and humanWhite) or (not gs.whiteToMove and humanBlack)
         for e in p.event.get():
             if e.type == p.QUIT:
                 running = False
             # mouse handler
-            elif e.type == p.MOUSEBUTTONDOWN:
+            elif e.type == p.MOUSEBUTTONDOWN and humanTurn:
                 location = p.mouse.get_pos()  # (x,y) location of mouse.
                 col = location[0] // SQ_SIZE
                 row = location[1] // SQ_SIZE
@@ -55,6 +57,12 @@ def event(gs, validMoves, moveMade, running, sqSelected, playerClicks, screen, c
                 if e.key == p.K_z: # undo when z is pressed.
                     gs.undoMove()
                     moveMade = True
+        
+        if not humanTurn:
+            AIMove = AI.findRandomMove(validMoves)
+            gs.makeMove(AIMove)
+            moveMade = True
+            humanTurn = not humanTurn
 
         if moveMade:
             validMoves = gs.getValidMoves()
@@ -76,9 +84,11 @@ def main():
     running = True
     sqSelected = ()  # no square is selected. keep track of last click of user.
     playerClicks = []  # keep track of player-clicks.
+    humanWhite = True
+    humanBlack = False
    # while running:
     #    for e in p.event.get():
-    event(gs, validMoves, moveMade, running, sqSelected, playerClicks, screen, clock)
+    event(gs, validMoves, moveMade, running, sqSelected, playerClicks, screen, clock, humanWhite, humanBlack)
             #running = event_running[0]
             #moveMade = event_running[1]
             #Trying for checkmate. Not fixed yet. Should only quit if No other move possible

@@ -177,7 +177,7 @@ class GameState():
                 col = c + 1 
                 for row in range(r + 1, endRow):
                     if self.board[row][col] == '--':
-                        print("col, ", col, "row", row)
+                        #print("col, ", col, "row", row)
                         col += 1
                     else:
                         return False
