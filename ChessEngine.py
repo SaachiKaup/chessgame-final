@@ -103,7 +103,7 @@ class GameState():
         if toWhite:
             sign = 1
             row = 6
-        if r == row and self.board[r - (sign * 2)][c] == '--':
+        if r == row and self.board[r - (sign * 2)][c] == '--' and self.board[r - (sign * 1)][c] == '--': 
             moves.append(Move((r,c), (r - (sign * 2), c), self.board))
         if r - (sign * 1) in range(0, 8):
             if self.board[r - (sign * 1)][c] == "--":
@@ -156,12 +156,13 @@ class GameState():
         ally = self.getEnemyOrAlly(self.whiteToMove, False)
         for direction in directions:
             for indx in range(1, 8):
-                endRow = r + direction[0] * indx
-                endCol = c + direction[1] * indx
+                endRow = r + direction[0]#was * indx
+                endCol = c + direction[1]#was * indx 
                 if endRow in range(0, 8) and endCol in range(0,8):
                     endPiece = self.board[endRow][endCol]
                     if endPiece[0] != ally:
                         moves.append(Move((r, c), (endRow, endCol), self.board))
+
                     else:
                         break
                 else:
@@ -223,10 +224,10 @@ class GameState():
                     if endPiece[0] == enemy or endPiece == '--':
                         moves.append(Move((r, c), (endRow, endCol), self.board))
                     
-                    else:
-                        break
-                else:
-                    break
+                   # else:
+                    #    break
+                #else:
+                 #   break
 
     def getQueenMoves(self, r, c, moves):
         self.getBishopMoves(r, c, moves)
@@ -234,18 +235,14 @@ class GameState():
 
     def getKingMoves(self, r, c, moves):
         king_move = [(1, 0), (0, 1), (-1, 0), (0, -1), (1, -1), (1, 1), (-1, 1), (-1,-1)]
-        ally = self.getEnemyOrAlly(self.whiteToMove, False)
+        enemy = self.getEnemyOrAlly(self.whiteToMove, True)
         for indx in range(8):
             endRow = r + king_move[indx][0]
             endCol = c + king_move[indx][1]
             if endRow in range(8) and endCol in range(8):
                 endPiece = self.board[endRow][endCol]
-                if endPiece[0] != ally:
+                if endPiece == '--' or endPiece[0] == enemy:
                     moves.append(Move((r, c), (endRow, endCol), self.board))
-                else:
-                    break
-            else:
-                break
 
 class Move():
 
