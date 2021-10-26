@@ -1,6 +1,7 @@
 # storing all information about current state of Chess game.
 # Also responsible for determining valid moves at current stats.
 import itertools as it
+import ChessAI as AI
 class GameState():
     def __init__(self):
         self.board =[
@@ -152,7 +153,7 @@ class GameState():
                     
     def getKnightMoves(self, r, c, moves):
         directions = [(2, 1), (2, -1), (1, 2), (1, -2),\
-                (-2, 1), (-2, -1), (-1, 2), (-1, -1)]
+                (-2, 1), (-2, -1), (-1, 2), (-1, -2)]
         ally = self.getEnemyOrAlly(self.whiteToMove, False)
         for direction in directions:
             for indx in range(1, 8):
@@ -223,11 +224,6 @@ class GameState():
                     
                     if endPiece[0] == enemy or endPiece == '--':
                         moves.append(Move((r, c), (endRow, endCol), self.board))
-                    
-                   # else:
-                    #    break
-                #else:
-                 #   break
 
     def getQueenMoves(self, r, c, moves):
         self.getBishopMoves(r, c, moves)

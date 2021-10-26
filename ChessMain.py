@@ -30,7 +30,6 @@ def event(gs, validMoves, moveMade, running, sqSelected, playerClicks, screen, c
                 location = p.mouse.get_pos()  # (x,y) location of mouse.
                 col = location[0] // SQ_SIZE
                 row = location[1] // SQ_SIZE
-                
                 if sqSelected == (row, col):  # the user clicked the same square twice
                     sqSelected = ()  # deselect
                     playerClicks = []  # clear player-clicks
