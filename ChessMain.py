@@ -38,8 +38,9 @@ def event(gs, validMoves, moveMade, running, sqSelected, playerClicks, screen, c
                     sqSelected = (row, col)
                     playerClicks.append(sqSelected)  # append for both first and second clicks.
                 if len(playerClicks) == 2:  # after 2nd click
+                    #print("player Click: ", playerClicks)
                     move = ChessEngine.Move(playerClicks[0], playerClicks[1], gs.board)
-                    print(move.getChessNotation(), move.pieceMoved, move.pieceCaptured)
+                    #print(move.getChessNotation(), move.pieceMoved, move.pieceCaptured)
                     
                     for indx in range(len(validMoves)):
                         if move == validMoves[indx]:
@@ -56,9 +57,9 @@ def event(gs, validMoves, moveMade, running, sqSelected, playerClicks, screen, c
                 if e.key == p.K_z: # undo when z is pressed.
                     gs.undoMove()
                     moveMade = True
-        
+
         if not humanTurn:
-            AIMove = AI.findRandomMove(validMoves)
+            AIMove = AI.findBestMove(gs, validMoves)
             gs.makeMove(AIMove)
             moveMade = True
             humanTurn = not humanTurn
@@ -102,7 +103,8 @@ def drawGameState(screen, gs):
 
 
 def drawBoard(screen):
-    colors = [p.Color("cornsilk"), p.Color("tan")]
+    #colors = [p.Color("cornsilk"), p.Color("tan")]
+    colors = [p.Color("darksalmon"), p.Color("white")]
     for r in range(DIMENSION):
         for c in range(DIMENSION):
             color = colors[((r + c) % 2)]
